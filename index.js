@@ -14,6 +14,9 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+app.get('/' , (req , res) => {
+    res.send('OOPS');
+})
 app.post('/users', (req, res) => {
     const newUser = req.body;
     console.log("Received data:", req.body);
