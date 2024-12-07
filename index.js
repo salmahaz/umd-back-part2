@@ -140,11 +140,11 @@ app.put('/users/:id', (req, res) => {
             return res.status(404).json({ error: 'User not found' });
         }
 
-        const userExists = users.some(user => user.id === id);
-        const usernameExists = users.some(user => user.username === username);
-        const emailExists = users.some(user => user.email === email);
+       // const userExists = users.some(user => user.id === id);
+        const usernameExists = users.some(user => user.id != id && user.username === username);
+        const emailExists = users.some(user => user.id != id && user.email === email);
 
-        if (userExists || usernameExists || emailExists) {
+        if (usernameExists || emailExists) {
             const msg = [];
             if (userExists) msg.push('ID');
             if (usernameExists) msg.push('Username');
