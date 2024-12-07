@@ -161,10 +161,8 @@ app.delete('/users/:id', (req, res) => {
         let users = [];
         if (data) {
             try {
-                users = JSON.parse(data);
-                if (!Array.isArray(users)) {
-                    return res.status(500).json({ error: 'Users file format is incorrect' });
-                }
+                const jsonData = JSON.parse(data);
+                users = Array.isArray(jsonData.users) ? jsonData.users : [];
             } catch (e) {
                 console.error('Error parsing JSON:', e);
                 return res.status(500).json({ error: 'Invalid JSON format in users file' });
