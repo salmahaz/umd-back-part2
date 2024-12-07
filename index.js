@@ -102,8 +102,12 @@ app.put('/users/:id', (req, res) => {
     const id = req.params.id;
     const updatedUser = req.body;
 
+    // Validate that required fields are provided before proceeding
+    if (!updatedUser.name || !updatedUser.email || !updatedUser.phone) {
+        return res.status(400).json({ error: 'Missing required fields: name, email, and phone are required' });
+    }
+
     console.log("Received data:", req.body);
-   
 
     fs.readFile(usersFilePath, 'utf8', (err, data) => {
         if (err) {
@@ -114,32 +118,23 @@ app.put('/users/:id', (req, res) => {
         let users = [];
         if (data) {
             try {
-                const jsonData = JSON.parse(data); 
-                users = Array.isArray(jsonData.users) ? jsonData.users : []; 
-                 
-              
-
+                const jsonData = JSON.parse(data);
+                users = Array.isArray(jsonData.users) ? jsonData.users : [];
             } catch (e) {
                 console.error("Error parsing JSON:", e);
                 return res.status(500).json({ error: 'Invalid JSON format in users file' });
             }
         }
-       
+
         const userIndex = users.findIndex(user => user.id.toString() === id);
 
         if (userIndex === -1) {
             return res.status(404).json({ error: 'User not found' });
         }
 
-        
+        // Update the user object with the provided data
         users[userIndex] = { ...users[userIndex], ...updatedUser };
 
-        
-        if (!updatedUser.name || !updatedUser.email || !updatedUser.phone) {
-            return res.status(400).json({ error: 'Missing required fields' });
-        }
-
-      
         fs.writeFile(usersFilePath, JSON.stringify({ users }, null, 2), 'utf8', (writeErr) => {
             if (writeErr) {
                 console.error(writeErr);
@@ -154,8 +149,6 @@ app.put('/users/:id', (req, res) => {
     });
 });
 
-
-
 app.delete('/users/:id', (req, res) => {
     const userId = req.params.id;
 
@@ -165,19 +158,28 @@ app.delete('/users/:id', (req, res) => {
             return res.status(500).json({ error: 'Failed to read users file' });
         }
 
-        let users = data ? JSON.parse(data) : [];
+        let users = [];
+        if (data) {
+            try {
+                users = JSON.parse(data);
+                if (!Array.isArray(users)) {
+                    return res.status(500).json({ error: 'Users file format is incorrect' });
+                }
+            } catch (e) {
+                console.error('Error parsing JSON:', e);
+                return res.status(500).json({ error: 'Invalid JSON format in users file' });
+            }
+        }
 
-       
-        const userIndex = users.findIndex(user => user.id === userId);
+        const userIndex = users.findIndex(user => user.id.toString() === userId);
 
         if (userIndex === -1) {
             return res.status(404).json({ error: 'User not found' });
         }
 
-       
         users.splice(userIndex, 1);
 
-        fs.writeFile(usersFilePath, JSON.stringify(users, null, 2), 'utf8', (writeErr) => {
+        fs.writeFile(usersFilePath, JSON.stringify({ users }, null, 2), 'utf8', (writeErr) => {
             if (writeErr) {
                 console.error(writeErr);
                 return res.status(500).json({ error: 'Failed to update users file' });
@@ -187,6 +189,11 @@ app.delete('/users/:id', (req, res) => {
         });
     });
 });
+
+
+
+
+
 
 app.listen(Port, () => {
     console.log(`Server running on http://localhost:${Port}`);
