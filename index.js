@@ -65,18 +65,13 @@ app.post('/users', (req, res) => {
 
         let users = [];
         let userExists = false;
+       
         if (data) {
             try {
-                const jsonData = JSON.parse(data); 
-                users = jsonData.users || []; 
-
-               
-                userExists = users.some(
-                    (user) => user.id === id || user.username === username || user.email === email
-                );
-
+                const jsonData = JSON.parse(data);
+                users = Array.isArray(jsonData.users) ? jsonData.users : [];
             } catch (e) {
-                console.error("Error parsing JSON:", e);
+                console.error('Error parsing JSON:', e);
                 return res.status(500).json({ error: 'Invalid JSON format in users file' });
             }
         }
