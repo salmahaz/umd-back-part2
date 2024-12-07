@@ -4,14 +4,14 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import cors from 'cors';
 
-// Simulate __dirname in ES modules
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const Port = 3500;
 const app = express();
 
-// Use relative path for the JSON file
+
 const usersFilePath = path.join(__dirname, 'data', 'users.json');
 console.log(usersFilePath);
 
@@ -21,6 +21,22 @@ app.use(express.urlencoded({ extended: true }));
 
 app.get('/', (req, res) => {
     res.send('OOPS');
+});
+app.get('/users', (req, res) => {
+    fs.readFile(filePath, 'utf8', (err, data) => {
+        if (err) {
+            console.error('Error reading JSON file:', err);
+            return res.status(500).json({ error: 'Failed to read users' });
+        }
+
+        try {
+            const users = JSON.parse(data); 
+            res.status(200).json(users); 
+        } catch (parseErr) {
+            console.error('Error parsing JSON:', parseErr);
+            res.status(500).json({ error: 'Invalid JSON format' });
+        }
+    });
 });
 
 app.post('/users', (req, res) => {
