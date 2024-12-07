@@ -49,54 +49,58 @@ app.post('/users', (req, res) => {
     const newUser = req.body;
     console.log("Received data:", req.body);
 
-   
     const { id, username, email } = newUser;
 
-   
     if (!id || !username || !email) {
         return res.status(400).json({ error: 'Missing required fields (id, username, or email)' });
     }
 
     fs.readFile(usersFilePath, 'utf8', (err, data) => {
         if (err) {
-            console.error(err);
+            console.error('Error reading file:', err);
             return res.status(500).json({ error: 'Failed to read users file' });
         }
 
         let users = [];
-        let userExists = false;
-       
-        if (data) {
-            try {
+        try {
+            // Handle empty or invalid file contents
+            if (data.trim()) {
                 const jsonData = JSON.parse(data);
                 users = Array.isArray(jsonData.users) ? jsonData.users : [];
-            } catch (e) {
-                console.error('Error parsing JSON:', e);
-                return res.status(500).json({ error: 'Invalid JSON format in users file' });
             }
+        } catch (e) {
+            console.error('Error parsing JSON:', e);
+            return res.status(500).json({ error: 'Invalid JSON format in users file' });
         }
 
-        if (userExists) {
+        const userExists = users.some(user => user.id === id);
+        const usernameExists = users.some(user => user.username === username);
+        const emailExists = users.some(user => user.email === email);
+
+        if (userExists || usernameExists || emailExists) {
+            const msg = [];
+            if (userExists) msg.push('ID');
+            if (usernameExists) msg.push('Username');
+            if (emailExists) msg.push('Email');
             return res.status(400).json({
-                msg: 'User with this Id, Username, or Email already exists. Please try again.'
-            });
-        } else {
-            
-            users.push(newUser);
-
-            
-            const updatedData = { users: users }; // Wrap the users array in an object
-            fs.writeFile(usersFilePath, JSON.stringify(updatedData, null, 2), 'utf8', (writeErr) => {
-                if (writeErr) {
-                    console.error(writeErr);
-                    return res.status(500).json({ error: 'Failed to update users file' });
-                }
-
-                res.status(200).json({ message: 'User added successfully' });
+                msg: `User with this ${msg.join(', ')} already exists. Please try again.`,
             });
         }
+
+        users.push(newUser);
+
+        const updatedData = { users };
+        fs.writeFile(usersFilePath, JSON.stringify(updatedData, null, 2), 'utf8', (writeErr) => {
+            if (writeErr) {
+                console.error('Error writing file:', writeErr);
+                return res.status(500).json({ error: 'Failed to update users file' });
+            }
+
+            res.status(200).json({ message: 'User added successfully' });
+        });
     });
 });
+
 
 app.put('/users/:id', (req, res) => {
     const id = req.params.id;
