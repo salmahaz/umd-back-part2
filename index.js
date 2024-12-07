@@ -69,7 +69,15 @@ app.post('/users', (req, res) => {
                 users = jsonData.users || [];
 
                 userExists = users.some(
-                    (user) => user.id === id || user.username === username || user.email === email
+                    (user) => user.id === id 
+                );
+
+                userExists_userName = users.some(
+                    (user) => user.username === username 
+                );
+
+                userExists_mail = users.some(
+                    (user) => user.email === email 
                 );
 
             } catch (e) {
@@ -80,9 +88,22 @@ app.post('/users', (req, res) => {
 
         if (userExists) {
             return res.status(400).json({
-                msg: 'User with this Id, Username, or Email already exists. Please try again.'
+                msg: 'User with this Id already exists. Please try again.'
             });
-        } else {
+            
+        } 
+        if (userExists_userName) {
+            return res.status(400).json({
+                msg: 'User with this userName already exists. Please try again.'
+            });
+            
+        } 
+        if (userExists_mail) {
+            return res.status(400).json({
+                msg: 'User with this Mail already exists. Please try again.'
+            });
+            
+        } 
             users.push(newUser);
 
             const updatedData = { users: users };
@@ -95,8 +116,7 @@ app.post('/users', (req, res) => {
                 res.status(200).json({ message: 'User added successfully' });
             });
         }
-    });
-});
+    )});
 
 app.put('/users/:id', (req, res) => {
     const id = req.params.id;
