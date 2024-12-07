@@ -146,7 +146,7 @@ app.put('/users/:id', (req, res) => {
 
         if (usernameExists || emailExists) {
             const msg = [];
-            if (userExists) msg.push('ID');
+            
             if (usernameExists) msg.push('Username');
             if (emailExists) msg.push('Email');
             return res.status(400).json({
