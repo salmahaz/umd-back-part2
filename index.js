@@ -16,8 +16,11 @@ const usersFilePath = path.join(__dirname, 'data', 'users.json');
 console.log(usersFilePath);
 
 app.use(cors({
-    origin: 'https://umd-front-last.vercel.app/',  
+    origin: 'https://umd-front-last.vercel.app',  
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
