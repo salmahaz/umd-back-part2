@@ -66,7 +66,7 @@ app.post('/users', (req, res) => {
         if (data) {
             try {
                 const jsonData = JSON.parse(data);
-                users = jsonData.users || [];
+                users = Array.isArray(jsonData.users) ? jsonData.users : [];
 
                 userExists = users.some(
                     (user) => user.id === id 
