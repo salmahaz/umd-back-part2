@@ -1,30 +1,34 @@
 import express from 'express';
-import fs from "fs";
-import path from "path";
-import cors from "cors";
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import cors from 'cors';
 
-const Port = 3500;  
+// Simulate __dirname in ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
+const Port = 3500;
 const app = express();
 
-
-const usersFilePath = 'C:\\Users\\hazhaz\\u-m-d\\umd-back\\data\\users.json';
+// Use relative path for the JSON file
+const usersFilePath = path.join(__dirname, 'data', 'users.json');
+console.log(usersFilePath);
 
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.get('/' , (req , res) => {
+app.get('/', (req, res) => {
     res.send('OOPS');
-})
+});
+
 app.post('/users', (req, res) => {
     const newUser = req.body;
     console.log("Received data:", req.body);
 
-   
     const { id, username, email } = newUser;
 
-   
     if (!id || !username || !email) {
         return res.status(400).json({ error: 'Missing required fields (id, username, or email)' });
     }
@@ -39,10 +43,9 @@ app.post('/users', (req, res) => {
         let userExists = false;
         if (data) {
             try {
-                const jsonData = JSON.parse(data); 
-                users = jsonData.users || []; 
+                const jsonData = JSON.parse(data);
+                users = jsonData.users || [];
 
-               
                 userExists = users.some(
                     (user) => user.id === id || user.username === username || user.email === email
                 );
@@ -58,11 +61,9 @@ app.post('/users', (req, res) => {
                 msg: 'User with this Id, Username, or Email already exists. Please try again.'
             });
         } else {
-            
             users.push(newUser);
 
-            
-            const updatedData = { users: users }; // Wrap the users array in an object
+            const updatedData = { users: users };
             fs.writeFile(usersFilePath, JSON.stringify(updatedData, null, 2), 'utf8', (writeErr) => {
                 if (writeErr) {
                     console.error(writeErr);
@@ -75,98 +76,6 @@ app.post('/users', (req, res) => {
     });
 });
 
-
-app.put('/users/:id', (req, res) => {
-    const id = req.params.id;
-    const updatedUser = req.body;
-
-    console.log("Received data:", req.body);
-   
-
-    fs.readFile(usersFilePath, 'utf8', (err, data) => {
-        if (err) {
-            console.error(err);
-            return res.status(500).json({ error: 'Failed to read users file' });
-        }
-
-        let users = [];
-        if (data) {
-            try {
-                const jsonData = JSON.parse(data); 
-                users = Array.isArray(jsonData.users) ? jsonData.users : []; 
-                 
-              
-
-            } catch (e) {
-                console.error("Error parsing JSON:", e);
-                return res.status(500).json({ error: 'Invalid JSON format in users file' });
-            }
-        }
-       
-        const userIndex = users.findIndex(user => user.id.toString() === id);
-
-        if (userIndex === -1) {
-            return res.status(404).json({ error: 'User not found' });
-        }
-
-        
-        users[userIndex] = { ...users[userIndex], ...updatedUser };
-
-        
-        if (!updatedUser.name || !updatedUser.email || !updatedUser.phone) {
-            return res.status(400).json({ error: 'Missing required fields' });
-        }
-
-      
-        fs.writeFile(usersFilePath, JSON.stringify({ users }, null, 2), 'utf8', (writeErr) => {
-            if (writeErr) {
-                console.error(writeErr);
-                return res.status(500).json({ error: 'Failed to save updated user' });
-            }
-
-            return res.status(200).json({
-                message: 'User updated successfully',
-                user: users[userIndex],
-            });
-        });
-    });
-});
-
-
-
-app.delete('/users/:id', (req, res) => {
-    const userId = req.params.id;
-
-    fs.readFile(usersFilePath, 'utf8', (err, data) => {
-        if (err) {
-            console.error(err);
-            return res.status(500).json({ error: 'Failed to read users file' });
-        }
-
-        let users = data ? JSON.parse(data) : [];
-
-       
-        const userIndex = users.findIndex(user => user.id === userId);
-
-        if (userIndex === -1) {
-            return res.status(404).json({ error: 'User not found' });
-        }
-
-       
-        users.splice(userIndex, 1);
-
-        fs.writeFile(usersFilePath, JSON.stringify(users, null, 2), 'utf8', (writeErr) => {
-            if (writeErr) {
-                console.error(writeErr);
-                return res.status(500).json({ error: 'Failed to update users file' });
-            }
-
-            res.status(200).json({ message: 'User deleted successfully' });
-        });
-    });
-});
-
-
 app.listen(Port, () => {
-    console.log('Server running on http://localhost:3500');
+    console.log(`Server running on http://localhost:${Port}`);
 });
