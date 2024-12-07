@@ -109,7 +109,7 @@ app.put('/users/:id', (req, res) => {
     const id = req.params.id;
     const updatedUser = req.body;
 
-    // Validate that required fields are provided before proceeding
+   
     if (!updatedUser.name || !updatedUser.email || !updatedUser.phone) {
         return res.status(400).json({ error: 'Missing required fields: name, email, and phone are required' });
     }
@@ -139,7 +139,21 @@ app.put('/users/:id', (req, res) => {
             return res.status(404).json({ error: 'User not found' });
         }
 
-        // Update the user object with the provided data
+        const userExists = users.some(user => user.id === id);
+        const usernameExists = users.some(user => user.username === username);
+        const emailExists = users.some(user => user.email === email);
+
+        if (userExists || usernameExists || emailExists) {
+            const msg = [];
+            if (userExists) msg.push('ID');
+            if (usernameExists) msg.push('Username');
+            if (emailExists) msg.push('Email');
+            return res.status(400).json({
+                msg: `User with this ${msg.join(', ')} already exists. Please try again.`,
+            });
+        }
+        
+        
         users[userIndex] = { ...users[userIndex], ...updatedUser };
 
         fs.writeFile(usersFilePath, JSON.stringify({ users }, null, 2), 'utf8', (writeErr) => {
