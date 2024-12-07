@@ -109,7 +109,8 @@ app.put('/users/:id', (req, res) => {
     const id = req.params.id;
     const updatedUser = req.body;
 
-   
+    const { Id, username, email } = updatedUser;
+
     if (!updatedUser.name || !updatedUser.email || !updatedUser.phone) {
         return res.status(400).json({ error: 'Missing required fields: name, email, and phone are required' });
     }
@@ -153,7 +154,7 @@ app.put('/users/:id', (req, res) => {
             });
         }
         
-        
+
         users[userIndex] = { ...users[userIndex], ...updatedUser };
 
         fs.writeFile(usersFilePath, JSON.stringify({ users }, null, 2), 'utf8', (writeErr) => {
