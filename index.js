@@ -57,66 +57,49 @@ app.post('/users', (req, res) => {
 
     fs.readFile(usersFilePath, 'utf8', (err, data) => {
         if (err) {
-            console.error(err);
+            console.error("Error reading users file:", err);
             return res.status(500).json({ error: 'Failed to read users file' });
         }
 
         let users = [];
-        let userExists = false;
-        if (data) {
-            try {
+        try {
+            // Handle empty or invalid JSON gracefully
+            if (data.trim()) {
                 const jsonData = JSON.parse(data);
                 users = Array.isArray(jsonData.users) ? jsonData.users : [];
-
-                userExists = users.some(
-                    (user) => user.id === id 
-                );
-
-                userExists_userName = users.some(
-                    (user) => user.username === username 
-                );
-
-                userExists_mail = users.some(
-                    (user) => user.email === email 
-                );
-
-            } catch (e) {
-                console.error("Error parsing JSON:", e);
-                return res.status(500).json({ error: 'Invalid JSON format in users file' });
             }
+        } catch (parseError) {
+            console.error("Error parsing JSON:", parseError);
+            return res.status(500).json({ error: 'Invalid JSON format in users file' });
         }
+
+        const userExists = users.some(user => user.id === id);
+        const userExistsUsername = users.some(user => user.username === username);
+        const userExistsEmail = users.some(user => user.email === email);
 
         if (userExists) {
-            return res.status(400).json({
-                msg: 'User with this Id already exists. Please try again.'
-            });
-            
-        } 
-        if (userExists_userName) {
-            return res.status(400).json({
-                msg: 'User with this userName already exists. Please try again.'
-            });
-            
-        } 
-        if (userExists_mail) {
-            return res.status(400).json({
-                msg: 'User with this Mail already exists. Please try again.'
-            });
-            
-        } 
-            users.push(newUser);
-
-            const updatedData = { users: users };
-            fs.writeFile(usersFilePath, JSON.stringify(updatedData, null, 2), 'utf8', (writeErr) => {
-                if (writeErr) {
-                    console.error(writeErr);
-                    return res.status(500).json({ error: 'Failed to update users file' });
-                }
-
-                res.status(200).json({ message: 'User added successfully' });
-            });
+            return res.status(400).json({ msg: 'User with this ID already exists. Please try again.' });
         }
-    )});
+        if (userExistsUsername) {
+            return res.status(400).json({ msg: 'User with this username already exists. Please try again.' });
+        }
+        if (userExistsEmail) {
+            return res.status(400).json({ msg: 'User with this email already exists. Please try again.' });
+        }
+
+        users.push(newUser);
+
+        const updatedData = { users };
+        fs.writeFile(usersFilePath, JSON.stringify(updatedData, null, 2), 'utf8', (writeErr) => {
+            if (writeErr) {
+                console.error("Error writing to users file:", writeErr);
+                return res.status(500).json({ error: 'Failed to update users file' });
+            }
+
+            res.status(200).json({ message: 'User added successfully' });
+        });
+    });
+});
 
 app.put('/users/:id', (req, res) => {
     const id = req.params.id;
