@@ -23,7 +23,7 @@ app.get('/', (req, res) => {
     res.send('OOPS');
 });
 app.get('/users', (req, res) => {
-    fs.readFile(filePath, 'utf8', (err, data) => {
+    fs.readFile(usersFilePath, 'utf8', (err, data) => {
         if (err) {
             console.error('Error reading JSON file:', err);
             return res.status(500).json({ error: 'Failed to read users' });
