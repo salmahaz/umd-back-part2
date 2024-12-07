@@ -162,6 +162,30 @@
         "bs": "target end-to-end models"
       },
       "createdAt": "2024-12-05T14:23:49.347Z"
+    },
+    {
+      "id": "80885558800",
+      "name": "John oops",
+      "username": "johndoe123",
+      "email": "johndoeoops@example.com",
+      "address": {
+        "street": "123 Main St",
+        "suite": "Apt 101",
+        "city": "New York",
+        "zipcode": "10001",
+        "geo": {
+          "lat": "40.7128",
+          "lng": "-74.0060"
+        }
+      },
+      "phone": "+1-555-1234",
+      "website": "http://johndoe.com",
+      "company": {
+        "name": "Doe Industries",
+        "catchPhrase": "Innovation at its finest",
+        "bs": "B2B Solutions"
+      },
+      "createdAt": "2024-11-22T10:15:30.000Z"
     }
   ]
 }
